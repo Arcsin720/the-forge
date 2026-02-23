@@ -1,0 +1,206 @@
+/* app/globals.css */
+
+/* ---------- THE FORGE landing ---------- */
+.forge-root {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  color: #e7e7e7;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+.forge-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 500px at 50% 40%, rgba(255, 106, 0, 0.10), transparent 60%),
+    radial-gradient(700px 420px at 30% 70%, rgba(255, 106, 0, 0.08), transparent 55%),
+    linear-gradient(180deg, #090a0c 0%, #050608 100%);
+  filter: saturate(1.1);
+}
+
+.forge-wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 18px;
+  gap: 18px;
+}
+
+.forge-brand {
+  text-align: center;
+  max-width: 740px;
+}
+
+.forge-kicker {
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.forge-title {
+  margin: 10px 0 6px;
+  font-size: clamp(34px, 4.8vw, 62px);
+  font-weight: 800;
+}
+
+.forge-sub {
+  margin: 0 auto;
+  max-width: 560px;
+  opacity: 0.78;
+  line-height: 1.5;
+}
+
+.forge-scene {
+  position: relative;
+  width: min(820px, 92vw);
+  height: min(420px, 54vw);
+  min-height: 320px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 30px 90px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  cursor: pointer;
+  display: block;
+  transition: transform 180ms ease;
+}
+
+.forge-scene:hover {
+  transform: translateY(-2px);
+}
+
+.forge-cta {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.75;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.forge-foot {
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+/* ---------- SVG styling ---------- */
+.forge-hammer {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  top: 42px;
+  left: 58%;
+  transform-origin: 40% 70%;
+  filter: drop-shadow(0 14px 30px rgba(0,0,0,0.6));
+}
+
+.svg-handle { fill: #6b4a2b; }
+.svg-head { fill: #b9bcc4; }
+.svg-head2 { fill: #8f949f; }
+
+.forge-anvil {
+  position: absolute;
+  width: 520px;
+  height: 300px;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -20%);
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.72));
+}
+
+.svg-anvil-top { fill: #3b3f48; }
+.svg-anvil-base { fill: #2a2d34; }
+.svg-impact {
+  fill: rgba(255, 106, 0, 0.0);
+}
+
+/* ---------- Flash + Sparks ---------- */
+.forge-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: radial-gradient(420px 260px at 50% 55%, rgba(255,106,0,0.25), transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.forge-sparks {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.spark {
+  position: absolute;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 999px;
+  background: rgba(255, 106, 0, 0.95);
+  opacity: 0;
+  transform: translate(0, 0);
+}
+
+/* ---------- Animations ---------- */
+.forge-scene.is-striking .forge-hammer {
+  animation: hammerStrike 850ms cubic-bezier(.2,.9,.15,1) forwards;
+}
+
+.forge-scene.is-striking .forge-anvil {
+  animation: anvilShake 220ms ease-in-out 520ms 2;
+}
+
+.forge-scene.is-striking .forge-flash {
+  animation: flash 520ms ease-out 520ms forwards;
+}
+
+.forge-scene.is-striking .spark {
+  animation: spark 520ms ease-out var(--d) forwards;
+}
+
+.forge-scene.is-striking .svg-impact {
+  animation: impactGlow 520ms ease-out 520ms forwards;
+}
+
+@keyframes hammerStrike {
+  0%   { transform: translateY(0) rotate(-18deg); }
+  55%  { transform: translate(-6px, 72px) rotate(42deg); }
+  70%  { transform: translate(-6px, 72px) rotate(42deg); }
+  100% { transform: translateY(0) rotate(-12deg); }
+}
+
+@keyframes anvilShake {
+  0%   { transform: translate(-50%, -20%) rotate(0deg); }
+  25%  { transform: translate(calc(-50% - 2px), calc(-20% + 1px)) rotate(-0.6deg); }
+  50%  { transform: translate(calc(-50% + 2px), calc(-20% - 1px)) rotate(0.6deg); }
+  100% { transform: translate(-50%, -20%) rotate(0deg); }
+}
+
+@keyframes flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes impactGlow {
+  0%   { fill: rgba(255, 106, 0, 0.0); }
+  25%  { fill: rgba(255, 106, 0, 0.85); }
+  100% { fill: rgba(255, 106, 0, 0.0); }
+}
+
+@keyframes spark {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  10%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.7); }
+}
