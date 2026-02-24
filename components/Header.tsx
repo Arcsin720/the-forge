@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { Button } from "./Button";
 
 function NavLink(props: { href: string; label: string }) {
   const pathname = usePathname();
@@ -11,10 +12,10 @@ function NavLink(props: { href: string; label: string }) {
   return (
     <Link
       href={props.href}
-      className={`rounded-full px-3 py-1.5 text-xs transition-colors ${
+      className={`text-xs font-medium transition-all duration-200 ${
         isActive
-          ? "bg-forge-accent/10 text-forge-accent border border-forge-accent/70"
-          : "text-slate-300 border border-transparent hover:border-forge-accent/40 hover:text-forge-accent"
+          ? "text-forge-accent border-b-2 border-forge-accent pb-1"
+          : "text-slate-400 border-b-2 border-transparent pb-1 hover:text-slate-200"
       }`}
     >
       {props.label}
@@ -42,16 +43,18 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-forge-border/60 bg-black/60 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-sm border border-forge-accent/60 bg-gradient-to-br from-forge-accent/90 to-forge-accentSoft/60 shadow-forgeGlow" />
-          <div className="text-xs font-semibold tracking-[0.24em] uppercase">
-            THE FORGE
+    <header className="sticky top-0 z-30 border-b border-forge-border/40 bg-black/70 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+          <div className="h-8 w-8 rounded-sm border border-forge-accent/70 bg-gradient-to-br from-forge-accent/90 to-forge-accentSoft/60 shadow-lg group-hover:shadow-forgeGlow transition-shadow" />
+          <div className="text-sm font-bold tracking-widest uppercase hidden sm:block">
+            The Forge
           </div>
         </Link>
 
-        <nav className="flex items-center gap-3">
+        {/* Navigation */}
+        <nav className="flex items-center gap-8">
           <NavLink href="/" label="Accueil" />
           <NavLink href="/pricing" label="Offres" />
           <NavLink href="/about" label="À propos" />
@@ -60,41 +63,44 @@ export default function Header() {
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Actions */}
+        <div className="flex items-center gap-2 md:gap-3">
           {status !== "authenticated" && (
             <>
               <Link
                 href="/auth/signin"
-                className="rounded-full border border-transparent px-3 py-1.5 text-xs text-slate-300 hover:border-forge-accent/50 hover:text-forge-accent transition-colors"
+                className="hidden sm:block text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors px-3 py-2"
               >
                 Connexion
               </Link>
-              <Link
-                href="/auth/signup"
-                className="rounded-full border border-forge-accent/70 bg-forge-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-black"
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => router.push("/auth/signup")}
               >
                 Inscription
-              </Link>
+              </Button>
             </>
           )}
 
           {status === "authenticated" && (
-            <button
-              type="button"
+            <Button
+              variant="danger"
+              size="sm"
               onClick={handleLogout}
-              className="rounded-full border border-forge-accent/50 px-3 py-1.5 text-xs text-slate-300 hover:text-red-400 hover:border-red-400/50 transition-colors"
             >
               Déconnexion
-            </button>
+            </Button>
           )}
 
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handlePrimary}
-            className="hidden rounded-full border border-forge-accent/70 bg-forge-accent/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-forge-accent hover:bg-forge-accent/20 md:inline-flex"
           >
-            Choisir l&apos;offre PRO
-          </button>
+            <span className="hidden sm:inline">Offre PRO</span>
+            <span className="sm:hidden">PRO</span>
+          </Button>
         </div>
       </div>
     </header>
