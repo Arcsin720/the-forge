@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setCart } from "@/lib/cart";
+import { useToast } from "@/components/ToastProvider";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
 
 const goals = ["Prise de masse", "Perte de graisse", "Force", "Performance"];
 const levels = ["Débutant", "Intermédiaire", "Avancé"];
@@ -16,20 +19,44 @@ const tierLabels: Record<Tier, string> = {
   ELITE: "ELITE"
 };
 
+interface QuizOptionProps {
+  selected: boolean;
+  onClick: () => void;
+  label: string;
+}
+
+function QuizOption({ selected, onClick, label }: QuizOptionProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        px-4 py-2 rounded-lg text-xs font-semibold tracking-widest uppercase
+        border transition-all duration-200
+        ${
+          selected
+            ? "border-forge-accent bg-forge-accent/20 text-forge-accent"
+            : "border-forge-border bg-black/30 text-slate-300 hover:border-forge-accent/50"
+        }
+      `}
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function StartClient(props: { tier: Tier }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [goal, setGoal] = useState(goals[0] ?? "");
   const [level, setLevel] = useState(levels[0] ?? "");
   const [frequency, setFrequency] = useState(frequencies[0] ?? "");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   function handleContinue() {
     setLoading(true);
-    setError(null);
 
     try {
-      // Sauvegarder le panier
       setCart({
         goal,
         level,
@@ -37,130 +64,117 @@ export default function StartClient(props: { tier: Tier }) {
         tier: props.tier
       });
 
-      // Aller au panier
+      addToast("Configuration sauvegardée !", "success");
       router.push("/cart");
     } catch {
-      setError("Erreur lors de la sauvegarde");
+      addToast("Erreur lors de la sauvegarde", "error");
       setLoading(false);
     }
   }
 
   return (
     <main className="mx-auto max-w-4xl px-4 pb-16 pt-10 space-y-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.35em] text-forge-accentSoft/80">
             Étape 1/2
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-wide">
+          <h1 className="mt-2 text-3xl font-semibold tracking-wide">
             Configure ton programme.
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-slate-400">
+          <p className="mt-3 max-w-xl text-sm text-slate-400">
             Quelques questions rapides pour adapter THE FORGE à ton contexte
-            réel. Tu pourras ensuite passer au paiement sécurisé Stripe.
+            réel. Tu pourras revoir tes choix avant le paiement.
           </p>
         </div>
 
-        <div className="rounded-xl border border-forge-accent/60 bg-forge-accent/10 px-4 py-3 text-xs text-forge-accent">
-          <p className="uppercase tracking-[0.24em] text-[11px]">
-            Offre choisie
-          </p>
-          <p className="mt-1 text-sm font-semibold">
-            {tierLabels[props.tier]}
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push("/pricing")}
-            className="mt-2 text-[11px] text-forge-accentSoft underline-offset-4 hover:underline"
-          >
-            Changer d&apos;offre
-          </button>
-        </div>
+        <Card variant="highlight" padding="md">
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-forge-accent font-semibold">
+                Offre choisie
+              </p>
+              <p className="mt-2 text-lg font-bold text-forge-accent">
+                {tierLabels[props.tier]}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/pricing")}
+              fullWidth
+            >
+              Changer d&apos;offre
+            </Button>
+          </div>
+        </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Objectif principal
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {goals.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setGoal(value)}
-                className={`px-3 py-2 rounded-full text-xs border ${
-                  goal === value
-                    ? "border-forge-accent bg-forge-accent/10"
-                    : "border-forge-border bg-black/30"
-                }`}
-              >
-                {value}
-              </button>
-            ))}
+      <div className="grid gap-8 md:grid-cols-3">
+        <Card variant="default">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+              🎯 Objectif
+            </p>
+            <div className="space-y-2">
+              {goals.map((value) => (
+                <QuizOption
+                  key={value}
+                  label={value}
+                  selected={goal === value}
+                  onClick={() => setGoal(value)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Niveau actuel
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {levels.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setLevel(value)}
-                className={`px-3 py-2 rounded-full text-xs border ${
-                  level === value
-                    ? "border-forge-accent bg-forge-accent/10"
-                    : "border-forge-border bg-black/30"
-                }`}
-              >
-                {value}
-              </button>
-            ))}
+        <Card variant="default">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+              📈 Niveau
+            </p>
+            <div className="space-y-2">
+              {levels.map((value) => (
+                <QuizOption
+                  key={value}
+                  label={value}
+                  selected={level === value}
+                  onClick={() => setLevel(value)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Fréquence hebdo
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {frequencies.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFrequency(value)}
-                className={`px-3 py-2 rounded-full text-xs border ${
-                  frequency === value
-                    ? "border-forge-accent bg-forge-accent/10"
-                    : "border-forge-border bg-black/30"
-                }`}
-              >
-                {value}x / semaine
-              </button>
-            ))}
+        <Card variant="default">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+              ⏰ Fréquence
+            </p>
+            <div className="space-y-2">
+              {frequencies.map((value) => (
+                <QuizOption
+                  key={value}
+                  label={`${value}x / semaine`}
+                  selected={frequency === value}
+                  onClick={() => setFrequency(value)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {error && (
-        <p className="text-xs text-red-400 bg-red-950/40 border border-red-800 rounded-md px-3 py-2">
-          {error}
-        </p>
-      )}
-
-      <div className="flex justify-end">
-        <button
-          type="button"
-          disabled={loading}
+      <div className="flex justify-end pt-4">
+        <Button
+          variant="primary"
+          size="lg"
+          isLoading={loading}
           onClick={handleContinue}
-          className="px-8 py-3 rounded-full bg-forge-accent text-black text-xs font-semibold tracking-[0.2em] uppercase disabled:opacity-60"
         >
-          {loading ? "Chargement..." : "Voir mon panier"}
-        </button>
+          Voir mon panier
+        </Button>
       </div>
     </main>
   );
