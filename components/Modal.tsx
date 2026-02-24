@@ -1,6 +1,15 @@
 import React from 'react';
 import { Card } from './Card';
 
+/**
+ * Props pour le composant Modal (fenêtre modale)
+ * @param isOpen - Contrôle l'affichage de la modale
+ * @param onClose - Callback appelé quand la modale doit se fermer
+ * @param title - Titre affiché dans l'en-tête de la modale
+ * @param children - Contenu principal de la modale
+ * @param footer - Contenu optionnel du pied de page (boutons d'actions)
+ * @param size - Largeur maximale (sm, md, lg)
+ */
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,12 +19,41 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+/**
+ * Composant Modal - Fenêtre de dialogue centrée avec backdrop
+ * 
+ * Architecture:
+ * - Backdrop opaque avec blur qui ferme la modale au clic
+ * - Fenêtre centrée avec Card component
+ * - En-tête avec titre et bouton fermer (X)
+ * - Contenu principal scrollable si trop long
+ * - Pied de page optionnel séparé par une ligne
+ * 
+ * Caractéristiques:
+ * - Ne rend rien si isOpen est false
+ * - Fermeture possible via backdrop, bouton X, ou callback externe
+ * - Z-index élevé (z-50) pour rester au-dessus du contenu
+ * - Responsive avec 3 tailles (sm/md/lg)
+ * 
+ * @example
+ * const [isOpen, setIsOpen] = useState(false);
+ * <Modal
+ *   isOpen={isOpen}
+ *   onClose={() => setIsOpen(false)}
+ *   title="Confirmation"
+ *   footer={<Button onClick={handleDelete}>Confirmer</Button>}
+ * >
+ *   Êtes-vous sûr?
+ * </Modal>
+ */
 export const Modal = React.forwardRef<
   HTMLDivElement,
   ModalProps
 >(({ isOpen, onClose, title, children, footer, size = 'md' }, ref) => {
+  // N'affiche rien si la modale n'est pas ouverte
   if (!isOpen) return null;
 
+  // Classes de taille maximale pour la modale
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -24,7 +62,7 @@ export const Modal = React.forwardRef<
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop semi-transparent avec blur - cliquable pour fermer */}
       <div
         className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm transition-opacity"
         onClick={onClose}

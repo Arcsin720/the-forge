@@ -1,8 +1,30 @@
 import React, { ButtonHTMLAttributes } from "react";
 
+/**
+ * Variant de bouton disponibles:
+ * - primary: Bouton principal avec accent color (pour les actions principales)
+ * - secondary: Bouton secondaire avec accent faible (pour les actions alternatives)
+ * - danger: Bouton de danger avec couleur rouge (pour les suppressions/actions irréversibles)
+ * - outline: Bouton épuré avec bordure uniquement (pour les actions tertiaires)
+ */
 type ButtonVariant = "primary" | "secondary" | "danger" | "outline";
+
+/**
+ * Tailles de bouton:
+ * - sm: Petit (px-3 py-1.5, text-xs) - Pour les champs de forme ou actions mineures
+ * - md: Moyen (px-4 py-2, text-sm) - Taille par défaut et standard
+ * - lg: Grand (px-6 py-3, text-base) - Pour les CTA (call-to-action) importants
+ */
 type ButtonSize = "sm" | "md" | "lg";
 
+/**
+ * Props pour le composant Button
+ * Hérite de tous les attributs HTML de <button>
+ * @param variant - Style visuel du bouton (primary, secondary, danger, outline)
+ * @param size - Taille du bouton (sm, md, lg)
+ * @param isLoading - Affiche un spinner et désactive le bouton pendant le chargement
+ * @param fullWidth - Rend le bouton 100% large (block)
+ */
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -10,6 +32,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
+/**
+ * Styles pour chaque variante de bouton
+ * Chaque variante inclut: couleur de base, survol, et état désactivé
+ */
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-forge-accent text-black hover:bg-forge-accentSoft disabled:bg-forge-accent/50",
@@ -21,12 +47,31 @@ const variantStyles: Record<ButtonVariant, string> = {
     "border border-forge-border text-slate-300 hover:border-forge-accent/50 hover:text-forge-accent disabled:opacity-50"
 };
 
+/**
+ * Styles pour chaque taille de bouton
+ * Padding et taille de texte varient selon la taille
+ */
 const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-xs",
   md: "px-4 py-2 text-sm",
   lg: "px-6 py-3 text-base"
 };
 
+/**
+ * Composant Button - Bouton réutilisable avec multiples variantes et états
+ * 
+ * Supporte:
+ * - 4 variantes de style (primary, secondary, danger, outline)
+ * - 3 tailles (sm, md, lg)
+ * - État de chargement avec spinner animé
+ * - Mode pleine largeur
+ * - Tous les attributs HTML natifs de <button>
+ * 
+ * @example
+ * <Button variant="primary" size="md">Cliquez-moi</Button>
+ * <Button variant="danger" onClick={() => deleteItem()}>Supprimer</Button>
+ * <Button isLoading>Chargement en cours...</Button>
+ */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
