@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./animations.css";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
 import AuthSession from "@/components/AuthSession";
