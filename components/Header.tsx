@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 function NavLink(props: { href: string; label: string }) {
   const pathname = usePathname();
@@ -36,6 +36,11 @@ export default function Header() {
     }
   }
 
+  async function handleLogout() {
+    await signOut({ redirect: false });
+    router.push("/");
+  }
+
   return (
     <header className="sticky top-0 z-30 border-b border-forge-border/60 bg-black/60 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -50,7 +55,9 @@ export default function Header() {
           <NavLink href="/" label="Accueil" />
           <NavLink href="/pricing" label="Offres" />
           <NavLink href="/about" label="À propos" />
-          <NavLink href="/account" label="Mon espace" />
+          {status === "authenticated" && (
+            <NavLink href="/account" label="Mon espace" />
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -69,6 +76,16 @@ export default function Header() {
                 Inscription
               </Link>
             </>
+          )}
+
+          {status === "authenticated" && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-forge-accent/50 px-3 py-1.5 text-xs text-slate-300 hover:text-red-400 hover:border-red-400/50 transition-colors"
+            >
+              Déconnexion
+            </button>
           )}
 
           <button

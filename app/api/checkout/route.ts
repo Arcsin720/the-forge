@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { hash } from "bcrypt";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
@@ -34,15 +35,6 @@ export async function POST(request: Request) {
       return tooManyRequests();
     }
 
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { error: "Non authentifié" },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
 
     // Valider les inputs
@@ -56,27 +48,68 @@ export async function POST(request: Request) {
     }
 
     const validatedData = validation.data;
+    let userEmail: string;
+    let userId: string;
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: session.user.email
+    // Cas 1 : Utilisateur authentifié (ancien flow)
+    const session = await getServerSession(authOptions);
+    if (session?.user?.email) {
+      userEmail = session.user.email;
+      
+      const user = await prisma.user.findUnique({
+        where: { email: userEmail }
+      });
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "Utilisateur introuvable" },
+          { status: 404 }
+        );
       }
-    });
 
-    if (!user) {
+      userId = user.id;
+    }
+    // Cas 2 : Guest checkout avec création de compte (nouveau flow)
+    else if (validatedData.email && validatedData.password) {
+      userEmail = validatedData.email;
+
+      // Vérifier si l'email existe déjà
+      const existing = await prisma.user.findUnique({
+        where: { email: userEmail }
+      });
+
+      if (existing) {
+        return NextResponse.json(
+          { error: "Un compte existe déjà avec cet email" },
+          { status: 400 }
+        );
+      }
+
+      // Créer le compte
+      const passwordHash = await hash(validatedData.password, 10);
+      const newUser = await prisma.user.create({
+        data: {
+          email: userEmail,
+          passwordHash,
+          name: null
+        }
+      });
+
+      userId = newUser.id;
+      console.log(`[CHECKOUT] New user created: ${userId}`);
+    }
+    // Cas 3 : Ni session, ni email/password
+    else {
       return NextResponse.json(
-        { error: "Utilisateur introuvable" },
-        { status: 404 }
+        { error: "Non authentifié ou données manquantes" },
+        { status: 401 }
       );
     }
 
     const priceId = getPriceId(validatedData.tier);
-
     const origin = env.NEXT_PUBLIC_APP_URL;
 
-    const tierParam = validatedData.tier.toLowerCase();
-
-    console.log(`[CHECKOUT] Creating session for user: ${user.id}, tier: ${validatedData.tier}`);
+    console.log(`[CHECKOUT] Creating session for user: ${userId}, tier: ${validatedData.tier}`);
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -88,21 +121,21 @@ export async function POST(request: Request) {
         }
       ],
       success_url: `${origin}/program/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/start?tier=${tierParam}`,
+      cancel_url: `${origin}/cart`,
       metadata: {
-        userId: user.id,
+        userId,
         goal: validatedData.goal,
         level: validatedData.level,
         frequency: validatedData.frequency,
         tier: validatedData.tier,
-        userEmail: user.email
+        userEmail
       }
     });
 
     console.log(`[CHECKOUT] Session created: ${stripeSession.id}`);
 
     // Log analytics
-    logCheckoutInitiated(session.user.email, clientIp, validatedData.tier, validatedData.goal);
+    logCheckoutInitiated(userEmail, clientIp, validatedData.tier, validatedData.goal);
 
     return NextResponse.json(
       {

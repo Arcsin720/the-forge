@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setCart } from "@/lib/cart";
 
 const goals = ["Prise de masse", "Perte de graisse", "Force", "Performance"];
 const levels = ["Débutant", "Intermédiaire", "Avancé"];
@@ -23,50 +24,24 @@ export default function StartClient(props: { tier: Tier }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleCheckout() {
+  function handleContinue() {
     setLoading(true);
     setError(null);
 
-    const response = await fetch("/api/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    try {
+      // Sauvegarder le panier
+      setCart({
         goal,
         level,
         frequency,
         tier: props.tier
-      })
-    });
+      });
 
-    setLoading(false);
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        const params = new URLSearchParams({
-          callbackUrl: `/start?tier=${props.tier.toLowerCase()}`
-        });
-        window.location.href = `/auth/signin?${params.toString()}`;
-        return;
-      }
-
-      const data = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
-
-      setError(
-        data?.error ?? "Impossible de lancer la forge, réessaie plus tard."
-      );
-      return;
-    }
-
-    const data = (await response.json()) as { url?: string };
-
-    if (data.url) {
-      router.push(data.url);
-    } else {
-      setError("Réponse Stripe invalide");
+      // Aller au panier
+      router.push("/cart");
+    } catch {
+      setError("Erreur lors de la sauvegarde");
+      setLoading(false);
     }
   }
 
@@ -181,10 +156,10 @@ export default function StartClient(props: { tier: Tier }) {
         <button
           type="button"
           disabled={loading}
-          onClick={handleCheckout}
+          onClick={handleContinue}
           className="px-8 py-3 rounded-full bg-forge-accent text-black text-xs font-semibold tracking-[0.2em] uppercase disabled:opacity-60"
         >
-          {loading ? "Redirection..." : "Passer au paiement"}
+          {loading ? "Chargement..." : "Voir mon panier"}
         </button>
       </div>
     </main>

@@ -34,7 +34,9 @@ export const checkoutSchema = z.object({
     .refine(
       (val) => ["BASIC", "PRO", "ELITE"].includes(val),
       "Tier invalide"
-    )
+    ),
+  email: z.string().email("Email invalide").optional(),
+  password: z.string().min(8, "Mot de passe invalide").optional()
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
