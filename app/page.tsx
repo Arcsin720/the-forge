@@ -30,7 +30,7 @@ export default function HomePage() {
               <span className="text-forge-accent">. Sans bullshit.</span>
             </h1>
             <p className="max-w-xl text-sm text-slate-400">
-              THE FORGE construit un plan d'entraînement premium autour de
+              THE FORGE construit un plan d&apos;entraînement premium autour de
               ton objectif, de ton niveau et de ton rythme réel. Tu paies une
               fois, tu repars avec un programme complet et actionnable.
             </p>

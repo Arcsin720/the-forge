@@ -1,5 +1,9 @@
 /* app/globals.css */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ---------- THE FORGE landing ---------- */
 .forge-root {
   min-height: 100vh;
