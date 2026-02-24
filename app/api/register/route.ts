@@ -2,9 +2,19 @@ import { NextResponse } from "next/server";
 import { hash } from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { registerSchema, validateInput } from "@/lib/validation";
+import { checkRateLimit, getClientIp, tooManyRequests } from "@/lib/rateLimit";
+import { logRegistration, logApiError } from "@/lib/analytics";
 
 export async function POST(request: Request) {
+  const clientIp = getClientIp(request);
+  
   try {
+    // Rate limiting: max 5 registrations par IP par 15 minutes
+    if (!checkRateLimit(clientIp, "register", 5, 15 * 60 * 1000)) {
+      console.warn(`[REGISTER] Rate limit exceeded for IP: ${clientIp}`);
+      return tooManyRequests();
+    }
+
     const body = await request.json();
 
     // Valider les inputs
@@ -45,6 +55,9 @@ export async function POST(request: Request) {
 
     console.log(`[REGISTER] User created: ${user.id}`);
 
+    // Log analytics
+    logRegistration(user.email, clientIp);
+
     return NextResponse.json(
       {
         id: user.id,
@@ -53,7 +66,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[REGISTER] Error:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("[REGISTER] Error:", errorMsg);
+    logApiError("register", errorMsg, clientIp);
     return NextResponse.json(
       { error: "Erreur lors de la création du compte" },
       { status: 500 }

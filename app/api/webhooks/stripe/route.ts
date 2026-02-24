@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createProgramForUser } from "@/lib/programs";
 import { sendProgramConfirmationEmail } from "@/lib/email";
 import { env } from "@/lib/env";
+import { logPaymentSucceeded, logProgramGenerated, logApiError } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
   console.log(`[WEBHOOK] Event received: ${event.type}`);
 
   if (event.type === "checkout.session.completed") {
+    const startTime = Date.now();
     const session = event.data.object as Stripe.Checkout.Session;
 
     const metadata = session.metadata;
@@ -103,6 +105,11 @@ export async function POST(request: Request) {
 
         console.log(`[WEBHOOK] Program created successfully: ${program.id}`);
 
+        // Log analytics
+        logPaymentSucceeded(metadata.userEmail, metadata.tier, metadata.goal, session.id);
+        const endTime = Date.now();
+        logProgramGenerated(metadata.userEmail, metadata.tier, metadata.goal, endTime - startTime);
+
         // Envoyer email de confirmation (optionnel)
         if (metadata.userEmail) {
           await sendProgramConfirmationEmail(
@@ -113,7 +120,9 @@ export async function POST(request: Request) {
           );
         }
       } catch (error) {
-        console.error("[WEBHOOK] Error creating program:", error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error("[WEBHOOK] Error creating program:", errorMsg);
+        logApiError("webhook_stripe", errorMsg);
         // Même après retries, on retourne 200 pour que Stripe ne resend pas
         // (l'erreur est loggée pour debug)
         return new NextResponse(

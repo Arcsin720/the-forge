@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { checkoutSchema, validateInput } from "@/lib/validation";
 import { env } from "@/lib/env";
+import { checkRateLimit, getClientIp, tooManyRequests } from "@/lib/rateLimit";
+import { logCheckoutInitiated, logApiError } from "@/lib/analytics";
 
 function getPriceId(tier: "BASIC" | "PRO" | "ELITE") {
   const map: Record<"BASIC" | "PRO" | "ELITE", string> = {
@@ -23,7 +25,15 @@ function getPriceId(tier: "BASIC" | "PRO" | "ELITE") {
 }
 
 export async function POST(request: Request) {
+  const clientIp = getClientIp(request);
+  
   try {
+    // Rate limiting: max 10 checkouts par IP par heure
+    if (!checkRateLimit(clientIp, "checkout", 10, 60 * 60 * 1000)) {
+      console.warn(`[CHECKOUT] Rate limit exceeded for IP: ${clientIp}`);
+      return tooManyRequests();
+    }
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
@@ -91,6 +101,9 @@ export async function POST(request: Request) {
 
     console.log(`[CHECKOUT] Session created: ${stripeSession.id}`);
 
+    // Log analytics
+    logCheckoutInitiated(session.user.email, clientIp, validatedData.tier, validatedData.goal);
+
     return NextResponse.json(
       {
         url: stripeSession.url
@@ -98,7 +111,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[CHECKOUT] Error:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("[CHECKOUT] Error:", errorMsg);
+    logApiError("checkout", errorMsg, clientIp);
     return NextResponse.json(
       { error: "Erreur lors du paiement" },
       { status: 500 }
