@@ -83,7 +83,7 @@ export default async function ProgramPage(props: ProgramPageParams) {
         <div className="flex items-center justify-between pt-2 text-xs">
           {program.tier === "ELITE" && (
             <Link
-              href="/coaching"
+              href={`/coaching?programId=${program.id}`}
               className="text-forge-accentSoft underline-offset-4 hover:underline"
             >
               Aller au coaching ELITE
@@ -91,7 +91,7 @@ export default async function ProgramPage(props: ProgramPageParams) {
           )}
 
           <Link
-            href="/account"
+            href="/dashboard"
             className="text-forge-accentSoft underline-offset-4 hover:underline"
           >
             Retour à mes programmes

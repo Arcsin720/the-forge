@@ -32,6 +32,8 @@ export function setCart(item: CartItem): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(CART_KEY, JSON.stringify(item));
+    // Émettre un événement custom pour notifier le header
+    window.dispatchEvent(new Event("cart-updated"));
   } catch (error) {
     console.error("[CART] Failed to save:", error);
   }
@@ -44,6 +46,8 @@ export function clearCart(): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(CART_KEY);
+    // Émettre un événement custom pour notifier le header
+    window.dispatchEvent(new Event("cart-updated"));
   } catch (error) {
     console.error("[CART] Failed to clear:", error);
   }

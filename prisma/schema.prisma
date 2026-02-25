@@ -40,6 +40,25 @@ model Program {
   createdAt        DateTime   @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracking ProgramTracking[]
+}
+
+model ProgramTracking {
+  id                String   @id @default(cuid())
+  programId         String
+  week              Int
+  energyLevel       Int
+  soreness          Int
+  motivation        Int
+  adherenceRate     Int
+  nutritionQuality  Int
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, week])
 }
 
 model Account {

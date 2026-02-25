@@ -1,10 +1,8 @@
 import "./globals.css";
-import "./animations.css";
 import type { ReactNode } from "react";
 import AppShell from "@/components/AppShell";
 import AuthSession from "@/components/AuthSession";
-import { ToastProvider } from "@/components/ToastProvider";
-import { ToastContainer } from "@/components/ToastContainer";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "THE FORGE",
@@ -15,12 +13,11 @@ export default function RootLayout(props: { children: ReactNode }) {
   return (
     <html lang="fr" className="dark">
       <body>
-        <AuthSession>
-          <ToastProvider>
+        <Suspense fallback={null}>
+          <AuthSession>
             <AppShell>{props.children}</AppShell>
-            <ToastContainer />
-          </ToastProvider>
-        </AuthSession>
+          </AuthSession>
+        </Suspense>
       </body>
     </html>
   );

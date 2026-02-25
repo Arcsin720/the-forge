@@ -1,7 +1,4 @@
-"use client";
-
-import { PricingCard } from "@/components/PricingCard";
-import { Card } from "@/components/Card";
+import Link from "next/link";
 
 const tiers: {
   id: "basic" | "pro" | "elite";
@@ -17,7 +14,7 @@ const tiers: {
     price: "39€",
     tagline: "Programme structuré, sans fioritures.",
     features: [
-      "Plan d'entraînement complet 8–12 semaines",
+      "Plan d’entraînement complet 8–12 semaines",
       "Répartition personnalisée selon ton objectif",
       "Volume et intensité adaptés à ton niveau",
       "Format PDF/texte exploitable immédiatement"
@@ -52,149 +49,123 @@ const tiers: {
 
 export default function PricingPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20 pt-12">
-      {/* Hero section */}
-      <section className="text-center space-y-4 mb-16">
-        <p className="text-xs uppercase tracking-[0.35em] text-forge-accentSoft/80 font-semibold">
-          Nos offres
+    <main className="mx-auto max-w-5xl px-4 pb-16 pt-10">
+      <section className="text-center space-y-3">
+        <p className="text-xs uppercase tracking-[0.35em] text-forge-accentSoft/80">
+          Offres
         </p>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+        <h1 className="text-3xl font-semibold">
           Choisis le métal à frapper.
         </h1>
-        <p className="mx-auto max-w-2xl text-sm md:text-base text-slate-400 leading-relaxed">
-          Pas d&apos;abonnement, pas de bullshit. Tu choisis une offre, tu fais un court quiz, tu paies une fois, tu reçois ton programme construit autour de ta réalité.
+        <p className="mx-auto max-w-2xl text-sm text-slate-400">
+          Pas d’abonnement, pas de bullshit. Tu choisis un tier, tu passes un
+          court quiz, tu paies une fois, tu reçois ton programme construit autour
+          de ta réalité.
         </p>
       </section>
 
-      {/* Pricing cards */}
-      <section className="grid gap-6 md:gap-8 md:grid-cols-3 mb-16">
+      <section className="mt-10 grid gap-5 md:grid-cols-3">
         {tiers.map((tier) => (
-          <PricingCard
+          <div
             key={tier.id}
-            id={tier.id}
-            name={tier.name}
-            price={tier.price}
-            tagline={tier.tagline}
-            features={tier.features}
-            highlighted={tier.highlighted}
-          />
+            className={`relative flex flex-col rounded-2xl border bg-black/50 p-5 text-sm ${
+              tier.highlighted
+                ? "border-forge-accent/80 shadow-forgeGlow"
+                : "border-forge-border"
+            }`}
+          >
+            {tier.highlighted && (
+              <div className="absolute -top-3 right-4 rounded-full border border-forge-accent/80 bg-forge-accent px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-black">
+                Recommandé
+              </div>
+            )}
+            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+              {tier.name}
+            </p>
+            <p className="mt-2 text-2xl font-semibold">{tier.price}</p>
+            <p className="mt-1 text-xs text-slate-300">{tier.tagline}</p>
+
+            <ul className="mt-4 flex-1 space-y-2 text-xs text-slate-300">
+              {tier.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-forge-accent" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href={`/start?tier=${tier.id}`}
+              className="mt-6 inline-flex items-center justify-center rounded-full border border-forge-accent/70 bg-forge-accent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-black shadow-forgeGlow hover:brightness-105"
+            >
+              Choisir l&apos;offre
+            </Link>
+          </div>
         ))}
       </section>
 
-      {/* Comparison table */}
-      <section className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold tracking-wide mb-2">
-            Comparaison détaillée
-          </h2>
-          <p className="text-xs text-slate-400">
-            Vérифie tous les détails inclus dans chaque offre
-          </p>
-        </div>
-
-        <Card variant="dark">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-forge-border/50">
-                  <th className="px-4 py-4 font-semibold text-slate-300 text-xs uppercase tracking-wider">
-                    Inclut
-                  </th>
-                  {tiers.map((tier) => (
-                    <th
-                      key={tier.id}
-                      className="px-4 py-4 font-semibold text-forge-accent text-xs uppercase tracking-wider text-center"
-                    >
-                      {tier.name}
-                    </th>
+      <section className="mt-10 space-y-4 text-[11px] text-slate-400">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-300">
+          Comparaison rapide
+        </h2>
+        <div className="overflow-x-auto rounded-xl border border-forge-border bg-black/40">
+          <table className="min-w-full text-left">
+            <thead>
+              <tr className="border-b border-forge-border/70 text-[11px] text-slate-300">
+                <th className="px-4 py-3 font-normal">Inclut</th>
+                <th className="px-4 py-3 font-normal">BASIC</th>
+                <th className="px-4 py-3 font-normal">PRO</th>
+                <th className="px-4 py-3 font-normal">ELITE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  label: "Plan structuré 8–12 semaines",
+                  basic: true,
+                  pro: true,
+                  elite: true
+                },
+                {
+                  label: "Réglages selon ton objectif et ton niveau",
+                  basic: true,
+                  pro: true,
+                  elite: true
+                },
+                {
+                  label: "Cadre nutrition simplifié",
+                  basic: false,
+                  pro: true,
+                  elite: true
+                },
+                {
+                  label: "Liens YouTube triés",
+                  basic: false,
+                  pro: true,
+                  elite: true
+                },
+                {
+                  label: "Structure pensée pour le suivi coaching",
+                  basic: false,
+                  pro: false,
+                  elite: true
+                }
+              ].map((row) => (
+                <tr key={row.label} className="border-b border-forge-border/40">
+                  <td className="px-4 py-3">{row.label}</td>
+                  {[row.basic, row.pro, row.elite].map((value, index) => (
+                    <td key={index} className="px-4 py-3">
+                      {value ? (
+                        <span className="inline-block h-2 w-2 rounded-full bg-forge-accent" />
+                      ) : (
+                        <span className="text-slate-600">—</span>
+                      )}
+                    </td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    label: "Plan structuré 8–12 semaines",
-                    basic: true,
-                    pro: true,
-                    elite: true
-                  },
-                  {
-                    label: "Réglages selon ton objectif et niveau",
-                    basic: true,
-                    pro: true,
-                    elite: true
-                  },
-                  {
-                    label: "Cadre nutrition simplifié",
-                    basic: false,
-                    pro: true,
-                    elite: true
-                  },
-                  {
-                    label: "Liens YouTube triés",
-                    basic: false,
-                    pro: true,
-                    elite: true
-                  },
-                  {
-                    label: "Structure pensée pour suivi coaching",
-                    basic: false,
-                    pro: false,
-                    elite: true
-                  }
-                ].map((row) => (
-                  <tr key={row.label} className="border-b border-forge-border/30 hover:bg-white/2 transition-colors">
-                    <td className="px-4 py-3 text-slate-300 text-sm">{row.label}</td>
-                    {[row.basic, row.pro, row.elite].map((included, idx) => (
-                      <td key={idx} className="px-4 py-3 text-center">
-                        {included ? (
-                          <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-green-500/10 text-green-400">
-                            ✓
-                          </span>
-                        ) : (
-                          <span className="text-slate-600">—</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </section>
-
-      {/* FAQ section */}
-      <section className="mt-16 space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold tracking-wide mb-2">Questions fréquentes</h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {[
-            {
-              q: "Puis-je changer d'offre après achat ?",
-              a: "Non, mais chaque programme est complet et autonome. Tu peux toujours en acheter un autre plus tard."
-            },
-            {
-              q: "Et si je ne suis pas satisfait ?",
-              a: "Bien sûr, tu as 14 jours pour demander un remboursement sans questions."
-            },
-            {
-              q: "Combien de temps pour recevoir mon programme ?",
-              a: "Instantanément après validation du paiement Stripe. Tu le reçois par email."
-            },
-            {
-              q: "Peut-on personnaliser davantage ?",
-              a: "Oui, des sessions de coaching 1-1 peuvent être réservées séparément."
-            }
-          ].map((faq) => (
-            <Card key={faq.q} variant="default" padding="md">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm text-slate-100">{faq.q}</h3>
-                <p className="text-xs text-slate-400">{faq.a}</p>
-              </div>
-            </Card>
-          ))}
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
     </main>

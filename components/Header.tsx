@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./Button";
+import { useState, useEffect } from "react";
 
 function NavLink(props: { href: string; label: string }) {
   const pathname = usePathname();
@@ -26,6 +27,24 @@ function NavLink(props: { href: string; label: string }) {
 export default function Header() {
   const router = useRouter();
   const { status } = useSession();
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem("forge-cart") || "[]");
+      setCartCount(cart.length);
+    };
+    
+    updateCartCount();
+    window.addEventListener("storage", updateCartCount);
+    // Also listen for custom cart events
+    window.addEventListener("cart-updated", updateCartCount);
+    
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("cart-updated", updateCartCount);
+    };
+  }, []);
 
   function handlePrimary() {
     if (status === "authenticated") {
@@ -59,12 +78,28 @@ export default function Header() {
           <NavLink href="/pricing" label="Offres" />
           <NavLink href="/about" label="À propos" />
           {status === "authenticated" && (
-            <NavLink href="/account" label="Mon espace" />
+            <NavLink href="/dashboard" label="Espace" />
           )}
         </nav>
 
         {/* Actions */}
         <div className="flex items-center gap-2 md:gap-3">
+          {/* Cart Button */}
+          <button
+            onClick={() => router.push("/cart")}
+            className="relative p-2 text-slate-400 hover:text-forge-accent transition-colors"
+            title="Panier"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m10 0l2-9m-12 9h14m-14 0a1 1 0 11-2 0 1 1 0 012 0m14 0a1 1 0 11-2 0 1 1 0 012 0" />
+            </svg>
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-forge-accent rounded-full">
+                {cartCount}
+              </span>
+            )}
+          </button>
+
           {status !== "authenticated" && (
             <>
               <Link
